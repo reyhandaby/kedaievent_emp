@@ -1,0 +1,115 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+  /* Brand tokens */
+  --brand-primary: #6C5CE7; /* purple */
+  --brand-primary-600: #5B4AE2; /* hover */
+  --brand-secondary: #A78BFA; /* violet */
+  --brand-muted: #F3F4F6; /* gray-100 */
+  --brand-bg: #F8F7FF; /* subtle violet bg */
+  --brand-border: #E9E7F5; /* soft border */
+  --brand-text: #0F172A; /* slate-900 */
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--brand-bg);
+  color: var(--brand-text);
+  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+}
+
+/* Base containers */
+.container-page {
+  max-width: 80rem; /* 1280px */
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  transition: all 180ms ease;
+}
+.btn-primary {
+  background-color: var(--brand-primary);
+  color: #fff;
+  padding: 0.625rem 1rem; /* px-4 py-2.5 */
+}
+.btn-primary:hover { background-color: var(--brand-primary-600); }
+.btn-outline {
+  background-color: transparent;
+  border: 1px solid var(--brand-border);
+  color: var(--brand-text);
+  padding: 0.625rem 1rem;
+}
+.btn-outline:hover { border-color: var(--brand-primary); color: var(--brand-primary); }
+.btn-ghost {
+  background-color: transparent;
+  color: var(--brand-text);
+  padding: 0.5rem 0.75rem;
+}
+
+/* Cards */
+.card {
+  background-color: #fff;
+  border: 1px solid var(--brand-border);
+  border-radius: 0.75rem;
+  box-shadow: 0 4px 22px rgba(16, 24, 40, 0.06);
+}
+.card-hover:hover { box-shadow: 0 10px 30px rgba(16, 24, 40, 0.10); }
+.card-body { padding: 1.25rem; }
+.card-title { font-size: 1.125rem; font-weight: 700; color: var(--brand-text); }
+.card-subtitle { color: #64748B; font-size: 0.875rem; }
+
+/* Badges / Chips */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.25rem 0.625rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.badge-brand { background-color: #EEF2FF; color: #4338CA; }
+.badge-muted { background-color: #F1F5F9; color: #0F172A; }
+
+.chip { border: 1px solid var(--brand-border); border-radius: 999px; padding: 0.375rem 0.75rem; color: #334155; }
+.chip-active { border-color: var(--brand-primary); color: var(--brand-primary); background-color: #F5F3FF; }
+
+/* Navbar */
+.navbar {
+  backdrop-filter: saturate(180%) blur(10px);
+  background-color: rgba(255,255,255,0.85);
+  border-bottom: 1px solid var(--brand-border);
+}
+
+/* Hero */
+.hero-gradient {
+  background: radial-gradient(1200px circle at 10% 10%, rgba(108,92,231,0.12), transparent 40%),
+              radial-gradient(1200px circle at 90% 10%, rgba(167,139,250,0.12), transparent 40%),
+              linear-gradient(180deg, #FFFFFF 0%, #FAFAFF 100%);
+}
+
+/* Focus ring */
+.focus-ring { outline: none; box-shadow: 0 0 0 3px rgba(108,92,231,0.35); }
