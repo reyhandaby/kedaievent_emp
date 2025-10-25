@@ -1,0 +1,101 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           Int           @id @default(autoincrement())
+  name         String
+  email        String        @unique
+  password     String
+  role         Role          @default(CUSTOMER)
+  referralCode String        @unique
+  referredBy   String?
+  points       Int           @default(0)
+  events       Event[]       @relation("OrganizerEvents")
+  transactions Transaction[]
+  reviews      Review[]
+  createdAt    DateTime      @default(now())
+}
+
+model Event {
+  id             Int           @id @default(autoincrement())
+  title          String
+  description    String
+  category       String
+  location       String
+  price          Float
+  startDate      DateTime
+  endDate        DateTime
+  availableSeats Int
+  organizer      User          @relation("OrganizerEvents", fields: [organizerId], references: [id])
+  organizerId    Int
+  transactions   Transaction[]
+  reviews        Review[]
+  vouchers       Voucher[]
+  isActive       Boolean       @default(true)
+  createdAt      DateTime      @default(now())
+}
+
+model Voucher {
+  id              Int           @id @default(autoincrement())
+  code            String        @unique
+  discountPercent Int
+  startDate       DateTime
+  endDate         DateTime
+  event           Event         @relation(fields: [eventId], references: [id])
+  eventId         Int
+  createdAt       DateTime      @default(now())
+  Transaction     Transaction[]
+}
+
+model Transaction {
+  id              Int               @id @default(autoincrement())
+  user            User              @relation(fields: [userId], references: [id])
+  userId          Int
+  event           Event             @relation(fields: [eventId], references: [id])
+  eventId         Int
+  totalPrice      Float
+  pointsUsed      Int               @default(0)
+  voucher         Voucher?          @relation(fields: [voucherId], references: [id])
+  voucherId       Int?
+  status          TransactionStatus @default(WAITING_PAYMENT)
+  paymentProof    String?
+  expiresAt       DateTime          @default(now())
+  adminDeadlineAt DateTime          @default(now())
+  createdAt       DateTime          @default(now())
+}
+
+model Review {
+  id      Int    @id @default(autoincrement())
+  rating  Int
+  comment String
+  user    User   @relation(fields: [userId], references: [id])
+  userId  Int
+  event   Event  @relation(fields: [eventId], references: [id])
+  eventId Int
+}
+
+enum Role {
+  CUSTOMER
+  ORGANIZER
+}
+
+enum TransactionStatus {
+  WAITING_PAYMENT
+  WAITING_CONFIRMATION
+  DONE
+  REJECTED
+  EXPIRED
+  CANCELED
+}
