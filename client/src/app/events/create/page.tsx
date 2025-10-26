@@ -57,20 +57,53 @@ export default function CreateEvent() {
       return;
     }
 
+    // Extra guard: ensure we have a valid organizerId
+    if (!user?.id) {
+      toast.error('User ID tidak ditemukan. Silakan login ulang.');
+      return;
+    }
+
+    // Client-side check: startDate must be before endDate
+    const start = new Date(data.startDate);
+    const end = new Date(data.endDate);
+    if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+      toast.error('Format tanggal tidak valid');
+      return;
+    }
+    if (start >= end) {
+      toast.error('Tanggal mulai harus sebelum tanggal selesai');
+      return;
+    }
+
     setLoading(true);
     try {
-      const payload = { ...data, organizerId: user?.id };
+      // Normalize payload: ensure numeric types and ISO dates
+      const payload = {
+        title: data.title,
+        description: data.description,
+        price: Number(data.price),
+        startDate: start.toISOString(),
+        endDate: end.toISOString(),
+        availableSeats: Number(data.availableSeats),
+        category: data.category,
+        location: data.location,
+        organizerId: Number(user.id),
+      };
       console.log('Create Event payload:', payload);
       await api.post('events', payload, {
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${token || ''}`,
         },
       });
       toast.success('Event berhasil dibuat!');
       router.push('/events');
     } catch (error: any) {
-      console.error('Create Event error:', error.response?.data || error.message);
-      toast.error('Gagal membuat event: ' + (error.response?.data?.message || error.message || 'Kesalahan tidak diketahui'));
+      const serverMsg = error?.response?.data?.message;
+      const genericMsg = error?.message;
+      const rawData = error?.response?.data;
+      const detail = serverMsg || genericMsg || (rawData ? JSON.stringify(rawData) : 'Kesalahan tidak diketahui');
+      console.error('Create Event error:', detail);
+      toast.error('Gagal membuat event: ' + detail);
     } finally {
       setLoading(false);
     }
@@ -125,7 +158,7 @@ export default function CreateEvent() {
                         className="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md p-2 border"
                       />
                       {errors.title && (
-                        <p className="mt-1 text-sm text-red-600">{errors.title.message}</p>
+                        <p className="mt-1 text-sm text-red-600">{String(errors.title.message)}</p>
                       )}
                     </div>
 
@@ -140,7 +173,7 @@ export default function CreateEvent() {
                         className="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md p-2 border"
                       />
                       {errors.description && (
-                        <p className="mt-1 text-sm text-red-600">{errors.description.message}</p>
+                        <p className="mt-1 text-sm text-red-600">{String(errors.description.message)}</p>
                       )}
                     </div>
 
@@ -154,7 +187,7 @@ export default function CreateEvent() {
                         className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                       />
                       {errors.price && (
-                        <p className="mt-1 text-sm text-red-600">{errors.price.message}</p>
+                        <p className="mt-1 text-sm text-red-600">{String(errors.price.message)}</p>
                       )}
                     </div>
 
@@ -170,7 +203,7 @@ export default function CreateEvent() {
                         className="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md p-2 border"
                       />
                       {errors.availableSeats && (
-                        <p className="mt-1 text-sm text-red-600">{errors.availableSeats.message}</p>
+                        <p className="mt-1 text-sm text-red-600">{String(errors.availableSeats.message)}</p>
                       )}
                     </div>
 
@@ -185,7 +218,7 @@ export default function CreateEvent() {
                         className="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md p-2 border"
                       />
                       {errors.startDate && (
-                        <p className="mt-1 text-sm text-red-600">{errors.startDate.message}</p>
+                        <p className="mt-1 text-sm text-red-600">{String(errors.startDate.message)}</p>
                       )}
                     </div>
 
@@ -200,7 +233,7 @@ export default function CreateEvent() {
                         className="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md p-2 border"
                       />
                       {errors.endDate && (
-                        <p className="mt-1 text-sm text-red-600">{errors.endDate.message}</p>
+                        <p className="mt-1 text-sm text-red-600">{String(errors.endDate.message)}</p>
                       )}
                     </div>
 
@@ -222,12 +255,12 @@ export default function CreateEvent() {
                         <option value="Other">Lainnya</option>
                       </select>
                       {errors.category && (
-                        <p className="mt-1 text-sm text-red-600">{errors.category.message}</p>
+                        <p className="mt-1 text-sm text-red-600">{String(errors.category.message)}</p>
                       )}
                     </div>
 
                     <div className="col-span-6 sm:col-span-3">
-                      <label htmlFor="location" className="block text-sm font-medium text-gray-700">
+                      <label htmlFor="location" className="block text sm font-medium text-gray-700">
                         Location
                       </label>
                       <input
@@ -237,7 +270,7 @@ export default function CreateEvent() {
                         className="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md p-2 border"
                       />
                       {errors.location && (
-                        <p className="mt-1 text-sm text-red-600">{errors.location.message}</p>
+                        <p className="mt-1 text-sm text-red-600">{String(errors.location.message)}</p>
                       )}
                     </div>
                   </div>
