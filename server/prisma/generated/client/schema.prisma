@@ -1,0 +1,97 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "./generated/client"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id           Int           @id @default(autoincrement())
+  name         String
+  email        String        @unique
+  password     String
+  role         Role          @default(CUSTOMER)
+  referralCode String        @unique
+  referredBy   String?
+  points       Int           @default(0)
+  createdAt    DateTime      @default(now())
+  events       Event[]       @relation("OrganizerEvents")
+  reviews      Review[]
+  transactions Transaction[]
+}
+
+model Event {
+  id             Int           @id @default(autoincrement())
+  title          String
+  description    String
+  category       String
+  location       String
+  price          Float
+  startDate      DateTime
+  endDate        DateTime
+  availableSeats Int
+  organizerId    Int
+  isActive       Boolean       @default(true)
+  createdAt      DateTime      @default(now())
+  organizer      User          @relation("OrganizerEvents", fields: [organizerId], references: [id])
+  reviews        Review[]
+  transactions   Transaction[]
+  vouchers       Voucher[]
+}
+
+model Voucher {
+  id              Int           @id @default(autoincrement())
+  code            String        @unique
+  discountPercent Int
+  startDate       DateTime
+  endDate         DateTime
+  eventId         Int
+  createdAt       DateTime      @default(now())
+  Transaction     Transaction[]
+  event           Event         @relation(fields: [eventId], references: [id])
+}
+
+model Transaction {
+  id              Int               @id @default(autoincrement())
+  userId          Int
+  eventId         Int
+  totalPrice      Float
+  pointsUsed      Int               @default(0)
+  voucherId       Int?
+  status          TransactionStatus @default(WAITING_PAYMENT)
+  paymentProof    String?
+  expiresAt       DateTime          @default(now())
+  adminDeadlineAt DateTime          @default(now())
+  createdAt       DateTime          @default(now())
+  event           Event             @relation(fields: [eventId], references: [id])
+  user            User              @relation(fields: [userId], references: [id])
+  voucher         Voucher?          @relation(fields: [voucherId], references: [id])
+}
+
+model Review {
+  id      Int    @id @default(autoincrement())
+  rating  Int
+  comment String
+  userId  Int
+  eventId Int
+  event   Event  @relation(fields: [eventId], references: [id])
+  user    User   @relation(fields: [userId], references: [id])
+}
+
+enum Role {
+  CUSTOMER
+  ORGANIZER
+}
+
+enum TransactionStatus {
+  WAITING_PAYMENT
+  WAITING_CONFIRMATION
+  DONE
+  REJECTED
+  EXPIRED
+  CANCELED
+}
